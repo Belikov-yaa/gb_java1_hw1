@@ -15,7 +15,6 @@ public class HomeWork1 {
 
         char smile = '\u263b';
         boolean isRun = false;
-
     }
 
     public static float calculate(float a, float b, float c, float d) {
@@ -50,5 +49,4 @@ public class HomeWork1 {
             System.out.printf("%d год не високосный\n", year);
         }
     }
-
 }
