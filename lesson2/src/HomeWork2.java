@@ -131,8 +131,9 @@ public class HomeWork2 {
 
     public static void shiftArray(int[] array, int shiftN) {
         int arrLeight = array.length;
+        // если количество сдвигов больше длины массивов, то можно их уменьшить на количество полных сдвигов = длине массива
         shiftN = shiftN % arrLeight;
-        // сдвиг вправо влево на n равен сдвигу вправо на array.length - n
+        // сдвиг влево на n равен сдвигу вправо на array.length - n
         if (shiftN < 0) {
             shiftN = arrLeight + shiftN;
         }
