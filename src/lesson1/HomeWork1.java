@@ -27,7 +27,7 @@ public class HomeWork1 {
     }
 
     public static void printNegativeOrPositive(int number) {
-        if (number < 0) {
+        if (isNegative(number)) {
             System.out.println("Число отрицательное");
         } else {
             System.out.println("Число положительное");
