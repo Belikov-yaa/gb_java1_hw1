@@ -47,7 +47,7 @@ public class HomeWork2 {
 //        При каком n в какую сторону сдвиг можете выбирать сами.
         int[] arr7 = {1, 5, 3, 8, 11, 4, 9};
         System.out.println(Arrays.toString(arr7));
-        shiftArray(arr7, -8);
+        shiftArrayV2(arr7, -8);
         System.out.println(Arrays.toString(arr7));
     }
 
@@ -150,6 +150,29 @@ public class HomeWork2 {
                 prevI = nextI;
                 nextI = (prevI + shiftN) % arrLeight;
             } while (nextI != shiftN);
+        }
+    }
+
+    public static void shiftArrayV2(int[] array, int shiftN) {
+        int arrLeight = array.length;
+        // если количество сдвигов больше длины массивов, то можно их уменьшить на количество полных сдвигов = длине массива
+        // для этого можно просто сделать количество сдвигов = остатку от деления кол-ва сдвигов на длину массива
+        // сдвиг влево на -n равен сдвигу вправо на (-n) + array.length
+        shiftN = (shiftN % arrLeight + arrLeight) % arrLeight;
+
+        if (shiftN != 0) {
+            int prevI = 0;
+            int nextI = shiftN;
+            int prevItem = array[prevI];
+            int nextItem;
+
+            for (int i = 0; i < array.length; i++) {
+                nextItem = array[nextI];
+                array[nextI] = prevItem;
+                prevItem = nextItem;
+                prevI = nextI;
+                nextI = (prevI + shiftN) % arrLeight;
+            }
         }
     }
 }
