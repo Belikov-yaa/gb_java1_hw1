@@ -21,6 +21,7 @@ public class GuessNumber {
             int userAnswer = sc.nextInt();
             if (userAnswer > number) {
                 System.out.println("Загаданное число меньше");
+            } else if (userAnswer < number) {
                 System.out.println("Загаданное число больше");
             } else {
                 isWin = true;
