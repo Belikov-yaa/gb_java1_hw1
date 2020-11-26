@@ -9,6 +9,8 @@ public class XOGame {
     static final char DOT_O = 'O';
     static final char DOT_EMPTY = '.';
 
+    static final boolean SILLY_MODE = false;
+
     static char[][] map;
 
     static Scanner sc = new Scanner(System.in);
@@ -22,7 +24,7 @@ public class XOGame {
         while (true) {
             humanTurn();
             printMap();
-            if(checkWin(DOT_X)){
+            if (checkWin(DOT_X)) {
                 System.out.println("Вы выиграли!!!");
                 break;
             }
@@ -33,7 +35,7 @@ public class XOGame {
 
             aiTurn();
             printMap();
-            if(checkWin(DOT_O)){
+            if (checkWin(DOT_O)) {
                 System.out.println("Комьютер победил");
                 break;
             }
@@ -82,19 +84,51 @@ public class XOGame {
     static void aiTurn() {
         int x;
         int y;
-        do {
-            x = random.nextInt(SIZE);
-            y = random.nextInt(SIZE);
-        } while (!isCellValid(y, x));
+        if (SILLY_MODE) {
+            do {
+                x = random.nextInt(SIZE);
+                y = random.nextInt(SIZE);
+            } while (!isCellValid(y, x));
+        } else {
+            int maxCount = 0;
+            int[][] mapCellPrice = new int[SIZE][SIZE];
+            for (int i = 0; i < SIZE; i++) {  // i == x
+                for (int j = 0; j < SIZE; j++) {  // j == y
+                    if (isCellValid(j, i)) {
+                        int cellPrice = 0;
+                        if (isValidCellContains(j, i - 1, DOT_O)) cellPrice++;
+                        if (isValidCellContains(j, i + 1, DOT_O)) cellPrice++;
+                        for (int k = 0; k < 3; k++) {
+                            if (isValidCellContains(j - 1, i-1+k, DOT_O)) cellPrice++;
+                            if (isValidCellContains(j + 1, i-1+k, DOT_O)) cellPrice++;
+                        }
+                        maxCount = maxCount < cellPrice ? cellPrice : maxCount;
+                        mapCellPrice[j][i] = cellPrice;
+                    }
+                }
+            }
+
+            do {
+                x = random.nextInt(SIZE);
+                y = random.nextInt(SIZE);
+            } while (!(isCellValid(y, x) && mapCellPrice[y][x]==maxCount));
+        }
         map[y][x] = DOT_O;
     }
 
-
     static boolean isCellValid(int y, int x) {
+        return isValidCellContains(y, x, DOT_EMPTY);
+    }
+
+    static boolean isValidCellContains(int y, int x, char dot) {
+        return isValidCoord(y, x) && map[y][x] == dot;
+    }
+
+    static boolean isValidCoord(int y, int x) {
         if (y < 0 || x < 0 || y >= SIZE || x >= SIZE) {
             return false;
         }
-        return map[y][x] == DOT_EMPTY;
+        return true;
     }
 
     static boolean isFull() {
@@ -109,16 +143,55 @@ public class XOGame {
     }
 
     static boolean checkWin(char c) {
-        if (map[0][0] == c && map[0][1] == c && map[0][2] == c) { return true; }
-        if (map[1][0] == c && map[1][1] == c && map[1][2] == c) { return true; }
-        if (map[2][0] == c && map[2][1] == c && map[2][2] == c) { return true; }
+        boolean isLineExist;
 
-        if (map[0][0] == c && map[1][0] == c && map[2][0] == c) { return true; }
-        if (map[0][1] == c && map[1][1] == c && map[2][1] == c) { return true; }
-        if (map[0][2] == c && map[1][2] == c && map[2][2] == c) { return true; }
+        // проверяем горизонтальные линии
+        for (int y = 0; y < SIZE; y++) {
+            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
+                isLineExist = true;
+                for (int i = 0; i < DOTS_TO_WIN; i++) {
+                    isLineExist = isLineExist && map[y][x + i] == c;
+                    if (!isLineExist) break;
+                }
+                if (isLineExist) return true;
+            }
+        }
 
-        if (map[0][0] == c && map[1][1] == c && map[2][2] == c) { return true; }
-        if (map[0][2] == c && map[1][1] == c && map[2][0] == c) { return true; }
+        // проверяем вертикальные линии
+        for (int y = 0; y < SIZE - DOTS_TO_WIN + 1; y++) {
+            for (int x = 0; x < SIZE; x++) {
+                isLineExist = true;
+                for (int i = 0; i < DOTS_TO_WIN; i++) {
+                    isLineExist = isLineExist && map[y + i][x] == c;
+                    if (!isLineExist) break;
+                }
+                if (isLineExist) return true;
+            }
+        }
+
+        // проверяем диагонали вниз-вправо
+        for (int y = 0; y < SIZE - DOTS_TO_WIN + 1; y++) {
+            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
+                isLineExist = true;
+                for (int i = 0; i < DOTS_TO_WIN; i++) {
+                    isLineExist = isLineExist && map[y + i][x + i] == c;
+                    if (!isLineExist) break;
+                }
+                if (isLineExist) return true;
+            }
+        }
+
+        // проверяем диагонали вверх-вправо
+        for (int y = DOTS_TO_WIN - 1; y < SIZE; y++) {
+            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
+                isLineExist = true;
+                for (int i = 0; i < DOTS_TO_WIN; i++) {
+                    isLineExist = isLineExist && map[y - i][x + i] == c;
+                    if (!isLineExist) break;
+                }
+                if (isLineExist) return true;
+            }
+        }
 
         return false;
     }
