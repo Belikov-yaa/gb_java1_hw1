@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class XOGame {
-    static final int SIZE = 3;
+    static final int SIZE = 5;
     static final int DOTS_TO_WIN = 3;
 
     static final char DOT_X = 'X';
@@ -24,7 +24,7 @@ public class XOGame {
         while (true) {
             humanTurn();
             printMap();
-            if (checkWin(DOT_X)) {
+            if (checkWin(DOT_X, DOTS_TO_WIN)) {
                 System.out.println("Вы выиграли!!!");
                 break;
             }
@@ -35,7 +35,7 @@ public class XOGame {
 
             aiTurn();
             printMap();
-            if (checkWin(DOT_O)) {
+            if (checkWin(DOT_O, DOTS_TO_WIN)) {
                 System.out.println("Комьютер победил");
                 break;
             }
@@ -84,36 +84,90 @@ public class XOGame {
     static void aiTurn() {
         int x;
         int y;
-        if (SILLY_MODE) {
+        if (SILLY_MODE) {   // если включен "глупый режим", то генерируем случайный ход
             do {
                 x = random.nextInt(SIZE);
                 y = random.nextInt(SIZE);
             } while (!isCellValid(y, x));
+            map[y][x] = DOT_O;
         } else {
-            int maxCount = 0;
-            int[][] mapCellPrice = new int[SIZE][SIZE];
-            for (int i = 0; i < SIZE; i++) {  // i == x
-                for (int j = 0; j < SIZE; j++) {  // j == y
-                    if (isCellValid(j, i)) {
-                        int cellPrice = 0;
-                        if (isValidCellContains(j, i - 1, DOT_O)) cellPrice++;
-                        if (isValidCellContains(j, i + 1, DOT_O)) cellPrice++;
-                        for (int k = 0; k < 3; k++) {
-                            if (isValidCellContains(j - 1, i-1+k, DOT_O)) cellPrice++;
-                            if (isValidCellContains(j + 1, i-1+k, DOT_O)) cellPrice++;
-                        }
-                        maxCount = maxCount < cellPrice ? cellPrice : maxCount;
-                        mapCellPrice[j][i] = cellPrice;
+            if (findWinCell(DOTS_TO_WIN)) { // усли есть выигрышный ход то ходим туда и выходим из метода
+                return;
+            }
+
+            if (findLoseCell(DOTS_TO_WIN)) { // усли есть выигрышный ход для сопарника то ходим туда и выходим из метода
+                return;
+            }
+
+            if (findWinCell(DOTS_TO_WIN - 1)) { // если выигрышных нет, то можно ли построить линию -1 от победной
+                return;
+            }
+
+            findMaxPriceCell(DOT_O); // если ничего ранее не сработало, ищем ячейки рядом со своими ходами
+
+        }
+
+    }
+
+    public static void findMaxPriceCell(char dotO) {
+        int x;
+        int y;
+        int maxCount = 0;
+        int[][] mapCellPrice = new int[SIZE][SIZE];
+        for (int i = 0; i < SIZE; i++) {  // i == x
+            for (int j = 0; j < SIZE; j++) {  // j == y
+                if (isCellValid(j, i)) {
+                    int cellPrice = 0;
+                    if (isValidCellContains(j, i - 1, dotO)) cellPrice++;
+                    if (isValidCellContains(j, i + 1, dotO)) cellPrice++;
+                    for (int k = 0; k < 3; k++) {
+                        if (isValidCellContains(j - 1, i - 1 + k, dotO)) cellPrice++;
+                        if (isValidCellContains(j + 1, i - 1 + k, dotO)) cellPrice++;
+                    }
+                    maxCount = Math.max(maxCount, cellPrice);
+                    mapCellPrice[j][i] = cellPrice;
+                }
+            }
+        }
+
+        do {
+            x = random.nextInt(SIZE);
+            y = random.nextInt(SIZE);
+        } while (!(isCellValid(y, x) && mapCellPrice[y][x] == maxCount));
+        map[y][x] = DOT_O;
+    }
+
+    private static boolean findWinCell(int dotsToWin) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                if (isCellValid(y, x)) {
+                    map[y][x] = DOT_O;
+                    if (checkWin(DOT_O, dotsToWin)) {
+                        return true;
+                    } else {
+                        map[y][x] = DOT_EMPTY;
                     }
                 }
             }
-
-            do {
-                x = random.nextInt(SIZE);
-                y = random.nextInt(SIZE);
-            } while (!(isCellValid(y, x) && mapCellPrice[y][x]==maxCount));
         }
-        map[y][x] = DOT_O;
+        return false;
+    }
+
+    private static boolean findLoseCell(int dotsToWin) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                if (isCellValid(y, x)) {
+                    map[y][x] = DOT_X;
+                    if (checkWin(DOT_X, dotsToWin)) {
+                        map[y][x] = DOT_O;
+                        return true;
+                    } else {
+                        map[y][x] = DOT_EMPTY;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     static boolean isCellValid(int y, int x) {
@@ -142,58 +196,30 @@ public class XOGame {
         return true;
     }
 
-    static boolean checkWin(char c) {
-        boolean isLineExist;
-
-        // проверяем горизонтальные линии
+    static boolean checkWin(char dot, int dotsToWin) {
         for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
-                isLineExist = true;
-                for (int i = 0; i < DOTS_TO_WIN; i++) {
-                    isLineExist = isLineExist && map[y][x + i] == c;
-                    if (!isLineExist) break;
-                }
-                if (isLineExist) return true;
-            }
-        }
-
-        // проверяем вертикальные линии
-        for (int y = 0; y < SIZE - DOTS_TO_WIN + 1; y++) {
             for (int x = 0; x < SIZE; x++) {
-                isLineExist = true;
-                for (int i = 0; i < DOTS_TO_WIN; i++) {
-                    isLineExist = isLineExist && map[y + i][x] == c;
-                    if (!isLineExist) break;
-                }
-                if (isLineExist) return true;
+                if (checkLineWin(y, x, 0, 1, dotsToWin, dot)) return true; // проверяем горизонтальные линии
+                if (checkLineWin(y, x, 1, 0, dotsToWin, dot)) return true; // проверяем вертикальные линии
+                if (checkLineWin(y, x, 1, 1, dotsToWin, dot)) return true; // проверяем горизонтальные линии
+                if (checkLineWin(y, x, -1, 1, dotsToWin, dot)) return true; // проверяем горизонтальные линии
             }
         }
-
-        // проверяем диагонали вниз-вправо
-        for (int y = 0; y < SIZE - DOTS_TO_WIN + 1; y++) {
-            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
-                isLineExist = true;
-                for (int i = 0; i < DOTS_TO_WIN; i++) {
-                    isLineExist = isLineExist && map[y + i][x + i] == c;
-                    if (!isLineExist) break;
-                }
-                if (isLineExist) return true;
-            }
-        }
-
-        // проверяем диагонали вверх-вправо
-        for (int y = DOTS_TO_WIN - 1; y < SIZE; y++) {
-            for (int x = 0; x < SIZE - DOTS_TO_WIN + 1; x++) {
-                isLineExist = true;
-                for (int i = 0; i < DOTS_TO_WIN; i++) {
-                    isLineExist = isLineExist && map[y - i][x + i] == c;
-                    if (!isLineExist) break;
-                }
-                if (isLineExist) return true;
-            }
-        }
-
         return false;
+    }
+
+    static boolean checkLineWin(int y, int x, int dy, int dx, int dotsToWin, char dot) {
+        boolean isLineExist = false;
+        if (x + (dotsToWin - 1) * dx < SIZE
+                && y + (dotsToWin - 1) * dy < SIZE
+                && x + (dotsToWin - 1) * dx >= 0
+                && y + (dotsToWin - 1) * dy >= 0) {
+            for (int i = 0; i < dotsToWin; i++) {
+                isLineExist = map[y + dy * i][x + dx * i] == dot;
+                if (!isLineExist) break;
+            }
+        }
+        return isLineExist;
     }
 
 }
