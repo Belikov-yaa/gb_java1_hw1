@@ -179,10 +179,7 @@ public class XOGame {
     }
 
     static boolean isValidCoord(int y, int x) {
-        if (y < 0 || x < 0 || y >= SIZE || x >= SIZE) {
-            return false;
-        }
-        return true;
+        return y >= 0 && x >= 0 && y < SIZE && x < SIZE;
     }
 
     static boolean isFull() {
