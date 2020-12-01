@@ -7,10 +7,8 @@ public class Main {
         persons[3] = new Person("Babkina Alla", "Accountant", "buhgalter@office.com", "89215496754", 3500, 45);
         persons[4] = new Person("Bystrov Sergey", "Manager", "manager@office.com", "89215448888", 2800, 43);
 
-        for (Person person : persons
-        ) {
-            if (person.getAge()>=40)
-                person.print();
+        for (Person person : persons) {
+            if (person.getAge() > 40) person.print();
         }
     }
 }
