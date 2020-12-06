@@ -9,14 +9,22 @@ public class Plate {
         return food;
     }
 
-    public void decreaseFood(int amount) {
+    public boolean decreaseFood(int amount) {
         if (amount < 0) {
-            return;
+            return false;
         }
-        food -= amount;
+        if (food >= amount) {
+            food -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    public void addFood(int amount) {
+        food += amount;
     }
 
     public void info() {
-        System.out.println("Food: " + food);
+        System.out.println("Еды в тарелке: " + food);
     }
 }
