@@ -38,6 +38,22 @@ public class BattleMap extends JPanel {
                     // например через gameWindow
                 }
                 repaint();
+                if (Logic.gameFinished) {
+                    StringBuilder endText = new StringBuilder();
+                    endText.append("<html><h2>Игра Окончена</h2>");
+                    switch (Logic.winner) {
+                        case (Logic.DOT_EMPTY):
+                            endText.append("Ничья!");
+                            break;
+                        case (Logic.DOT_O):
+                            endText.append("Победили нолики!");
+                            break;
+                        case (Logic.DOT_X):
+                            endText.append("Победили крестики!");
+                    }
+                    endText.append("</i></html>");
+                    JOptionPane.showMessageDialog(gameWindow, endText.toString());
+                }
             }
         });
     }
@@ -73,20 +89,17 @@ public class BattleMap extends JPanel {
 
         for (int i = 0; i < Logic.SIZE; i++) {
             for (int j = 0; j < Logic.SIZE; j++) {
-                if(Logic.map[i][j] == Logic.DOT_X){
+                if (Logic.map[i][j] == Logic.DOT_X) {
                     drawX(g, j, i);
                 }
-
-
+                if (Logic.map[i][j] == Logic.DOT_O) {
+                    drawO(g, j, i);
+                }
             }
         }
-
-//        ((Graphics2D)g).setStroke(new BasicStroke(5));
-//        g.setColor(Color.RED);
-//        g.drawString("qweqweqwe", 200, 200);
-
-//        g.drawLine(100, 100, 400, 400);
-//        g.drawOval(100, 100, 300, 300);
+        if (Logic.gameFinished && Logic.winner != Logic.DOT_EMPTY) {
+            drawWinLine(g, Logic.winLine, Logic.winner);
+        }
     }
 
     private void drawX(Graphics g, int cellX, int cellY) {
@@ -94,5 +107,25 @@ public class BattleMap extends JPanel {
         g.setColor(Color.RED);
         g.drawLine(cellX * cellWidth, cellY * cellHeight,
                 (cellX + 1) * cellWidth, (cellY + 1) * cellHeight);
+        g.drawLine((cellX + 1) * cellWidth, cellY * cellHeight,
+                cellX * cellWidth, (cellY + 1) * cellHeight);
     }
+
+
+    private void drawO(Graphics g, int cellX, int cellY) {
+        ((Graphics2D) g).setStroke(new BasicStroke(5));
+        g.setColor(Color.BLUE);
+        g.drawOval(cellX * cellWidth, cellY * cellHeight, cellWidth, cellHeight);
+    }
+
+    private void drawWinLine(Graphics g, int[][] winLine, char winner) {
+        ((Graphics2D) g).setStroke(new BasicStroke(5));
+        if (winner == Logic.DOT_X)
+            g.setColor(Color.RED);
+        else if (winner == Logic.DOT_O)
+            g.setColor(Color.BLUE);
+        g.drawLine(winLine[0][1] * cellWidth + cellWidth / 2, winLine[0][0] * cellHeight + cellHeight / 2,
+                winLine[1][1] * cellWidth + cellWidth / 2, winLine[1][0] * cellHeight + cellHeight / 2);
+    }
+
 }

@@ -11,6 +11,9 @@ public class Logic {
 
     static char[][] map;
 
+    static char winner;
+    static int[][] winLine;
+
     static Random random = new Random();
 
     static boolean gameFinished;
@@ -18,24 +21,24 @@ public class Logic {
     public static void go() {
         gameFinished = true;
 
-        printMap();
+//        printMap();
         if (checkWinLines(DOT_X, DOTS_TO_WIN)) {
-            System.out.println("Вы выиграли!!!");
+//            System.out.println("Вы выиграли!!!");
             return;
         }
         if (isFull()) {
-            System.out.println("Ничья");
+//            System.out.println("Ничья");
             return;
         }
 
         aiTurn();
-        printMap();
+        //printMap();
         if (checkWinLines(DOT_O, DOTS_TO_WIN)) {
-            System.out.println("Комьютер победил");
+//            System.out.println("Комьютер победил");
             return;
         }
         if (isFull()) {
-            System.out.println("Ничья");
+//           System.out.println("Ничья");
             return;
         }
 
@@ -51,20 +54,25 @@ public class Logic {
         }
     }
 
-    static void printMap() {
-        System.out.print("  ");
-        for (int i = 0; i < SIZE; i++) {
-            System.out.print(i + 1 + " ");
-        }
-        System.out.println();
-        for (int i = 0; i < SIZE; i++) {
-            System.out.print(i + 1 + " ");
-            for (int j = 0; j < SIZE; j++) {
-                System.out.printf("%c ", map[i][j]);
-            }
-            System.out.println();
-        }
+    static void resetWinner() {
+        winner = DOT_EMPTY;
+        winLine = new int[2][2];
     }
+
+//    static void printMap() {
+//        System.out.print("  ");
+//        for (int i = 0; i < SIZE; i++) {
+//            System.out.print(i + 1 + " ");
+//        }
+//        System.out.println();
+//        for (int i = 0; i < SIZE; i++) {
+//            System.out.print(i + 1 + " ");
+//            for (int j = 0; j < SIZE; j++) {
+//                System.out.printf("%c ", map[i][j]);
+//            }
+//            System.out.println();
+//        }
+//    }
 
     static void humanTurn(int x, int y) {
         if (isCellValid(y, x)) {
@@ -127,7 +135,6 @@ public class Logic {
         map[y][x] = DOT_O;
     }
 
-
     static boolean isCellValid(int y, int x) {
         if (y < 0 || x < 0 || y >= SIZE || x >= SIZE) {
             return false;
@@ -143,23 +150,11 @@ public class Logic {
                 }
             }
         }
+
+        winner = DOT_EMPTY;
+
         return true;
     }
-
-//    static boolean checkWin(char c) {
-//        if (map[0][0] == c && map[0][1] == c && map[0][2] == c) { return true; }
-//        if (map[1][0] == c && map[1][1] == c && map[1][2] == c) { return true; }
-//        if (map[2][0] == c && map[2][1] == c && map[2][2] == c) { return true; }
-//
-//        if (map[0][0] == c && map[1][0] == c && map[2][0] == c) { return true; }
-//        if (map[0][1] == c && map[1][1] == c && map[2][1] == c) { return true; }
-//        if (map[0][2] == c && map[1][2] == c && map[2][2] == c) { return true; }
-//
-//        if (map[0][0] == c && map[1][1] == c && map[2][2] == c) { return true; }
-//        if (map[0][2] == c && map[1][1] == c && map[2][0] == c) { return true; }
-//
-//        return false;
-//    }
 
     static boolean checkLine(int cy, int cx, int vy, int vx, char dot, int dotsToWin) {
         if (cx + vx * (dotsToWin - 1) > SIZE - 1 || cy + vy * (dotsToWin - 1) > SIZE - 1 ||
@@ -172,6 +167,14 @@ public class Logic {
                 return false;
             }
         }
+
+        winner = dot;
+
+        winLine[0][0] = cy;
+        winLine[0][1] = cx;
+        winLine[1][0] = cy + vy * (dotsToWin - 1);
+        winLine[1][1] = cx + vx * (dotsToWin - 1);
+
         return true;
     }
 
